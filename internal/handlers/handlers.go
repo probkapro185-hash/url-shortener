@@ -29,18 +29,32 @@ func (h *Handlers) CreateUrlShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req ShortRequest
+	var req_2 string
 	json.NewDecoder(r.Body).Decode(&req)
 
 	if req.OriginUrl == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	sql_query_1 := `SELECT short_code FROM url_short WHERE original_url = $1`
+	err := h.Conn.QueryRow(context.Background(), sql_query_1, req.OriginUrl).Scan(&req_2)
+
+	if err == nil {
+		responce := ShortResponce{
+			ShortUrl: "http://localhost:8060/" + req_2,
+		}
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(responce)
+		return
+	}
+
 	Short_code := storage.GenerateShortCode(6)
 
 	sql_query := `INSERT INTO url_short (original_url,short_code) VALUES ($1,$2)`
 
-	_, err := h.Conn.Exec(context.Background(), sql_query, req.OriginUrl, Short_code)
-	if err != nil {
+	_, er := h.Conn.Exec(context.Background(), sql_query, req.OriginUrl, Short_code)
+	if er != nil {
 		fmt.Println("Error", err)
 	}
 
