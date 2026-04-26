@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS url_short (
+    id SERIAL PRIMARY KEY,
+    original_url TEXT NOT NULL UNIQUE,
+    short_code VARCHAR(10) NOT NULL UNIQUE,
+    clicks INTEGER DEFAULT 0
+);
